@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "env": {
+    "BASH_DEFAULT_TIMEOUT_MS": "300000"
+  },
+  "permissions": {
+    "allow": [
+      "Bash(git status *)",
+      "Bash(git -C * status *)",
+      "Bash(git diff *)",
+      "Bash(git -C * diff *)",
+      "Bash(git log *)",
+      "Bash(git -C * log *)",
+      "Bash(git show *)",
+      "Bash(git branch *)",
+      "Bash(git -C * branch *)",
+      "Bash(git fetch *)",
+      "Bash(git -C * fetch *)",
+      "Bash(git rev-list *)",
+      "Bash(git -C * rev-list *)",
+      "Bash(git rev-parse *)",
+      "Bash(git -C * rev-parse *)",
+      "Bash(git blame *)",
+      "Bash(npm run build)",
+      "Bash(npx jest *)",
+      "Bash(npx tsc --noEmit *)",
+      "Bash(node scripts/check-route-auth.js *)"
+    ],
+    "ask": [
+      "Bash(git push *)",
+      "Bash(git -C * push *)",
+      "Bash(mongosh *)",
+      "Bash(npx ts-node *)"
+    ],
+    "deny": [
+      "Read(./**/.env)",
+      "Read(./**/.env.*)",
+      "Read(./**/secrets/**)",
+      "Read(./**/*.key)",
+      "Read(./**/*.crt)",
+      "Edit(./**/.env)",
+      "Edit(./**/.env.*)",
+      "Edit(./*/dist/**)",
+      "Edit(./*/build/**)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/protect-files.js\"",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "Bash|PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/shell-guard.js\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/backend-route-auth-guard.js\"",
+            "timeout": 60,
+            "statusMessage": "Checking backend route auth bindings"
+          }
+        ]
+      }
+    ]
+  }
+}
